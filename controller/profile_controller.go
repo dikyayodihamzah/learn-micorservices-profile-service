@@ -36,9 +36,8 @@ func (controller *profileController) NewProfileRouter(app *fiber.App) {
 
 	user.Use(middleware.IsAuthenticated)
 	user.Get("/", controller.GetCurrentProfile)
-	user.Put("/:id", controller.UpdateProfile)
+	user.Put("/", controller.UpdateProfile)
 }
-
 
 func (controller *profileController) GetCurrentProfile(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("claims").(helper.JWTClaims)

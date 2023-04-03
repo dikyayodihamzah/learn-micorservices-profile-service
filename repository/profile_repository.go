@@ -89,7 +89,7 @@ func (repository *profileRepository) UpdateProfile(c context.Context, user domai
 	db := repository.Database(dbName)
 	defer db.Close(ctx)
 
-	query := `UPDATE profiles SET 
+	query := `UPDATE users SET 
 		name = $1, 
 		username = $2, 
 		email = $3, 
