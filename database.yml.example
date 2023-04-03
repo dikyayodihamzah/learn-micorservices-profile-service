@@ -1,0 +1,6 @@
+development:
+  dialect: postgres
+  database: users_db
+  user: postgres
+  password:
+  host: localhost
