@@ -8,15 +8,15 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type UserClaimsData struct {
-	Id       string `json:"nik"`
+type ProfileClaimsData struct {
+	ID       string `json:"nik"`
 	Username string `json:"name"`
 	RoleID   string `json:"role_id"`
 }
 
 type JWTClaims struct {
 	jwt.StandardClaims
-	User UserClaimsData `json:"user"`
+	Profile ProfileClaimsData `json:"user"`
 }
 
 var (
@@ -24,10 +24,10 @@ var (
 	sessionDuration = os.Getenv("JWT_SESSION_DURATION")
 )
 
-func GenerateJWT(issuer string, user UserClaimsData) (string, error) {
+func GenerateJWT(issuer string, profile ProfileClaimsData) (string, error) {
 	session, _ := strconv.Atoi(sessionDuration)
 	claims := &JWTClaims{
-		User: user,
+		Profile: profile,
 		StandardClaims: jwt.StandardClaims{
 			Issuer: issuer,
 			ExpiresAt: time.Now().Add(time.Hour * time.Duration(session)).Unix(),

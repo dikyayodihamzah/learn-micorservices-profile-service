@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.com/learn-micorservices/user-service/helper"
-	"gitlab.com/learn-micorservices/user-service/model/web"
+	"gitlab.com/learn-micorservices/profile-service/helper"
+	"gitlab.com/learn-micorservices/profile-service/model/web"
 )
 
 func IsAuthenticated(ctx *fiber.Ctx) error {
@@ -36,7 +36,7 @@ func IsAuthenticated(ctx *fiber.Ctx) error {
 func IsAdmin(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("claims").(helper.JWTClaims)
 
-	if claims.User.RoleID != "1" {
+	if claims.Profile.RoleID != "1" {
 		return fiber.NewError(fiber.StatusUnauthorized)
 	}
 

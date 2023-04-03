@@ -8,10 +8,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"gitlab.com/learn-micorservices/user-service/config"
-	"gitlab.com/learn-micorservices/user-service/controller"
-	"gitlab.com/learn-micorservices/user-service/repository"
-	"gitlab.com/learn-micorservices/user-service/service"
+	"gitlab.com/learn-micorservices/profile-service/config"
+	"gitlab.com/learn-micorservices/profile-service/controller"
+	"gitlab.com/learn-micorservices/profile-service/repository"
+	"gitlab.com/learn-micorservices/profile-service/service"
 )
 
 func controllers() {
@@ -21,10 +21,10 @@ func controllers() {
 	db := config.NewDB
 	validate := validator.New()
 
-	userRepository := repository.NewUserRepository(db)
+	profileRepository := repository.NewProfileRepository(db)
 	roleRepository := repository.NewRoleRepository(db)
-	userService := service.NewUserService(userRepository, roleRepository, validate)
-	userController := controller.NewUserController(userService)
+	profileService := service.NewProfileService(profileRepository, roleRepository, validate)
+	profileController := controller.NewProfileController(profileService)
 
 	app := fiber.New()
 	app.Use(recover.New())
@@ -35,7 +35,7 @@ func controllers() {
 		AllowCredentials: true,
 	}))
 
-	userController.NewUserRouter(app)
+	profileController.NewProfileRouter(app)
 
 	err := app.Listen(serverConfig.URI)
 	log.Println(err)

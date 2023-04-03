@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"gitlab.com/learn-micorservices/user-service/model/domain"
+	"gitlab.com/learn-micorservices/profile-service/model/domain"
 )
 
 type RoleRepository interface {

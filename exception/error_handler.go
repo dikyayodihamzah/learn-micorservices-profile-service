@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
-	"gitlab.com/learn-micorservices/user-service/model/web"
+	"gitlab.com/learn-micorservices/profile-service/model/web"
 )
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {
