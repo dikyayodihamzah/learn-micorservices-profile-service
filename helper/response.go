@@ -6,18 +6,15 @@ import (
 )
 
 // Profile Responses
-func ToProfileResponse(user domain.Profile) web.ProfileResponse {
+func ToProfileResponse(user domain.User) web.ProfileResponse {
 	return web.ProfileResponse{
-		ID:       user.ID,
 		Name:     user.Name,
 		Username: user.Username,
 		Email:    user.Email,
 		Phone:    user.Phone,
 		Role: web.RoleResponse{
-			ID:   user.Role.ID,
-			Name: user.Role.Name,
+			ID:   user.RoleID,
+			Name: user.RoleName,
 		},
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
 	}
 }

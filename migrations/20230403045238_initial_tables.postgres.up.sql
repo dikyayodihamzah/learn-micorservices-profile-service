@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    "id" varchar(16) NOT NULL,
+    "id" varchar(36) NOT NULL,
     "name" varchar(50) NOT NULL,
     "username" varchar(50) NOT NULL,
     "email" varchar(50) NOT NULL,
@@ -28,3 +28,13 @@ INSERT INTO roles ("id", "name", "created_at", "updated_at") VALUES
     ('role001', 'Admin', NOW(), NOW()),
     ('role002', 'Client', NOW(), NOW());
     
+INSERT INTO users ("id", "name", "username", "email", "password", "phone", "role_id", "created_at", "updated_at") VALUES
+    ('0ed2fd29-d080-4cf3-9019-744deef9c9d8',
+    'Diky Afamby Yodihamzah',
+    'dikyayodihamzah',
+    'dikyayodihamzah@gmail.com',
+    '$16$G2okalS3XbmDEznak77Kr.rRdoCk39oT2s4.V/C8TnRqWFHoCqq1a',
+    '089684279559',
+    'role001',
+    NOW(),
+    NOW());

@@ -14,9 +14,10 @@ import (
 var dbName = os.Getenv("DB_NAME")
 
 type ProfileRepository interface {
-	GetProfileByID(c context.Context, userID string) (domain.Profile, error)
-	GetProfilesByQuery(c context.Context, params string, value string) (domain.Profile, error)
-	UpdateProfile(c context.Context, user domain.Profile) error
+	GetProfileByID(c context.Context, userID string) (domain.User, error)
+	GetProfilesByQuery(c context.Context, params string, value string) (domain.User, error)
+	UpdateProfile(c context.Context, user domain.User) error
+	UpdatePassword(c context.Context, user domain.User) error
 }
 
 type profileRepository struct {
@@ -29,14 +30,14 @@ func NewProfileRepository(database func(dbName string) *pgx.Conn) ProfileReposit
 	}
 }
 
-func (repository *profileRepository) GetProfileByID(c context.Context, userID string) (domain.Profile, error) {
+func (repository *profileRepository) GetProfileByID(c context.Context, userID string) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
 
 	db := repository.Database(dbName)
 	defer db.Close(ctx)
 
-	query := `SELECT users.*, roles.name,
+	query := `SELECT users.*, roles.name
 		FROM users
 		LEFT JOIN roles ON roles.id = users.role_id 
 		WHERE users.id = $1`
@@ -44,45 +45,46 @@ func (repository *profileRepository) GetProfileByID(c context.Context, userID st
 	user, err := db.Query(ctx, query, userID)
 	if err != nil {
 		fmt.Printf("CollectRows error: %v", err)
-		return domain.Profile{}, exception.ErrInternalServer(err.Error())
+		return domain.User{}, exception.ErrInternalServer(err.Error())
 	}
 
 	defer user.Close()
 
-	data, err := pgx.CollectOneRow(user, pgx.RowToStructByPos[domain.Profile])
+	data, err := pgx.CollectOneRow(user, pgx.RowToStructByPos[domain.User])
 
 	if data.ID == "" {
-		return domain.Profile{}, exception.ErrNotFound("user not found")
+		return domain.User{}, exception.ErrNotFound("user not found")
 	}
 
 	if err != nil {
 		fmt.Printf("CollectRows error: %v", err)
-		return domain.Profile{}, exception.ErrNotFound("user not found")
+		return domain.User{}, exception.ErrNotFound("user not found")
 	}
 
 	return data, nil
 }
 
-func (repository *profileRepository) GetProfilesByQuery(c context.Context, params string, value string) (domain.Profile, error) {
+func (repository *profileRepository) GetProfilesByQuery(c context.Context, params string, value string) (domain.User, error) {
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
 
 	db := repository.Database(dbName)
 	defer db.Close(ctx)
 
-	query := fmt.Sprintf(`SELECT SELECT users.*,
+	query := fmt.Sprintf(`SELECT SELECT users.*, roles.name
 		FROM users
+		LEFT JOIN roles ON roles.id = users.role_id 
 		WHERE %s = $1`, params)
 
 	user := db.QueryRow(ctx, query, value)
 
-	var data domain.Profile
-	user.Scan(&data.ID, &data.Name, &data.Username, &data.Email, &data.Password, &data.Phone, &data.Role, &data.CreatedAt, &data.UpdatedAt)
+	var data domain.User
+	user.Scan(&data.ID, &data.Name, &data.Username, &data.Email, &data.Password, &data.Phone, &data.RoleID, &data.CreatedAt, &data.UpdatedAt, &data.RoleName)
 
 	return data, nil
 }
 
-func (repository *profileRepository) UpdateProfile(c context.Context, user domain.Profile) error {
+func (repository *profileRepository) UpdateProfile(c context.Context, user domain.User) error {
 	ctx, cancel := context.WithTimeout(c, 10*time.Second)
 	defer cancel()
 
@@ -95,7 +97,7 @@ func (repository *profileRepository) UpdateProfile(c context.Context, user domai
 		email = $3, 
 		password = $4, 
 		phone = $5, 
-		role = $6, 
+		role_id = $6, 
 		updated_at = $7
 		WHERE id = $8`
 
@@ -109,9 +111,30 @@ func (repository *profileRepository) UpdateProfile(c context.Context, user domai
 		user.Email,
 		user.Password,
 		user.Phone,
-		user.Role,
-		user.UpdatedAt); err != nil {
+		user.RoleID,
+		user.UpdatedAt,
+		user.ID); err != nil {
 		return exception.ErrUnprocessableEntity(err.Error())
+	}
+
+	return nil
+}
+
+func (repository *profileRepository) UpdatePassword(c context.Context, user domain.User) error {
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
+	defer cancel()
+
+	db := repository.Database(dbName)
+	defer db.Close(ctx)
+
+	query := "UPDATE users SET password = $1 WHERE id = $2"
+
+	if _, err := db.Prepare(c, "data", query); err != nil {
+		return exception.ErrInternalServer(err.Error())
+	}
+
+	if _, err := db.Exec(c, "data", user.Password, user.ID); err != nil {
+		return exception.ErrInternalServer(err.Error())
 	}
 
 	return nil

@@ -2,14 +2,12 @@ package web
 
 type UpdateProfileRequest struct {
 	Name     string `json:"name"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
 }
 
-type UpdateUsernameRequest struct {
-	Username string `json:"username"`
-}
-
-type UpdateRoleRequest struct {
-	RoleID   string `json:"role_id"`
+type UpdatePasswordRequest struct {
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
 }

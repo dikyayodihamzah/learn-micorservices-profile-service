@@ -36,8 +36,8 @@ func IsAuthenticated(ctx *fiber.Ctx) error {
 func IsAdmin(ctx *fiber.Ctx) error {
 	claims := ctx.Locals("claims").(helper.JWTClaims)
 
-	if claims.Profile.RoleID != "1" {
-		return fiber.NewError(fiber.StatusUnauthorized)
+	if claims.User.RoleID != "1" {
+		return fiber.NewError(fiber.StatusUnauthorized, "only admin can access")
 	}
 
 	return ctx.Next()

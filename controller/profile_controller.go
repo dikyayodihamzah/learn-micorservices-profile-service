@@ -5,6 +5,7 @@ import (
 	"gitlab.com/learn-micorservices/profile-service/config"
 	"gitlab.com/learn-micorservices/profile-service/exception"
 	"gitlab.com/learn-micorservices/profile-service/helper"
+
 	"gitlab.com/learn-micorservices/profile-service/middleware"
 	"gitlab.com/learn-micorservices/profile-service/model/web"
 	"gitlab.com/learn-micorservices/profile-service/service"
@@ -36,7 +37,8 @@ func (controller *profileController) NewProfileRouter(app *fiber.App) {
 
 	user.Use(middleware.IsAuthenticated)
 	user.Get("/", controller.GetCurrentProfile)
-	user.Put("/", controller.UpdateProfile)
+	user.Put("/update", controller.UpdateProfile)
+	user.Put("/change-password", controller.UpdatePassword)
 }
 
 func (controller *profileController) GetCurrentProfile(ctx *fiber.Ctx) error {
@@ -64,6 +66,27 @@ func (controller *profileController) UpdateProfile(ctx *fiber.Ctx) error {
 	}
 
 	user, err := controller.ProfileService.UpdateProfile(ctx.Context(), claims, *request)
+	if err != nil {
+		return exception.ErrorHandler(ctx, err)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(web.WebResponse{
+		Code:    fiber.StatusOK,
+		Status:  true,
+		Message: "success",
+		Data:    user,
+	})
+}
+
+func (controller *profileController) UpdatePassword(ctx *fiber.Ctx) error {
+	claims := ctx.Locals("claims").(helper.JWTClaims)
+
+	request := new(web.UpdatePasswordRequest)
+	if err := ctx.BodyParser(request); err != nil {
+		return exception.ErrorHandler(ctx, err)
+	}
+
+	user, err := controller.ProfileService.UpdatePassword(ctx.Context(), claims, *request)
 	if err != nil {
 		return exception.ErrorHandler(ctx, err)
 	}
