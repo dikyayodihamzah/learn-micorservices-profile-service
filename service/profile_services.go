@@ -85,6 +85,7 @@ func (service *profileService) UpdateProfile(c context.Context, claims helper.JW
 	}
 
 	// KAFKA
+	helper.ProduceToKafka(user, "PUT.USER", helper.KafkaTopic)
 
 	userRes, _ := service.ProfileRepository.GetProfileByID(c, user.ID)
 	return helper.ToProfileResponse(userRes), nil
@@ -113,6 +114,7 @@ func (service *profileService) UpdatePassword(c context.Context, claims helper.J
 	}
 
 	// KAFKA
+	helper.ProduceToKafka(user, "PUT.USER", helper.KafkaTopic)
 
 	userRes, _ := service.ProfileRepository.GetProfileByID(c, user.ID)
 	return helper.ToProfileResponse(userRes), nil

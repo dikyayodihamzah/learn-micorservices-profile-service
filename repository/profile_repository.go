@@ -18,6 +18,10 @@ type ProfileRepository interface {
 	GetProfilesByQuery(c context.Context, params string, value string) (domain.User, error)
 	UpdateProfile(c context.Context, user domain.User) error
 	UpdatePassword(c context.Context, user domain.User) error
+
+	// kafka
+	CreateUser(c context.Context, user domain.User) error
+	DeleteUser(c context.Context, user_id string) error
 }
 
 type profileRepository struct {
@@ -135,6 +139,67 @@ func (repository *profileRepository) UpdatePassword(c context.Context, user doma
 
 	if _, err := db.Exec(c, "data", user.Password, user.ID); err != nil {
 		return exception.ErrInternalServer(err.Error())
+	}
+
+	return nil
+}
+
+// function for kafka
+func (repository *profileRepository) CreateUser(c context.Context, user domain.User) error {
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
+	defer cancel()
+
+	db := repository.Database(dbName)
+	defer db.Close(ctx)
+
+	query := `INSERT INTO users (
+		id,
+		name,
+		username,
+		email,
+		password,
+		phone,
+		role_id,
+		created_at,
+		updated_at
+	)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+
+	if _, err := db.Prepare(ctx, "data", query); err != nil {
+		return exception.ErrInternalServer(err.Error())
+	}
+
+	if _, err := db.Exec(ctx, "data",
+		user.ID,
+		user.Name,
+		user.Username,
+		user.Email,
+		user.Password,
+		user.Phone,
+		user.RoleID,
+		user.CreatedAt,
+		user.UpdatedAt); err != nil {
+		return exception.ErrUnprocessableEntity(err.Error())
+	}
+
+	return nil
+}
+
+func (repository *profileRepository) DeleteUser(c context.Context, user_id string) error {
+	ctx, cancel := context.WithTimeout(c, 10*time.Second)
+	defer cancel()
+
+	db := repository.Database(dbName)
+	defer db.Close(ctx)
+
+	query := `DELETE FROM users WHERE id = $1`
+
+	if _, err := db.Prepare(ctx, "data", query); err != nil {
+		return exception.ErrInternalServer(err.Error())
+	}
+
+	if _, err := db.Exec(ctx, "data", user_id); err != nil {
+		return exception.ErrUnprocessableEntity(err.Error())
 	}
 
 	return nil
